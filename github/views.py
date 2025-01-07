@@ -165,24 +165,23 @@ def mail_sender(response_data):
             
     email = settings.__getattr__('EMAIL')
     email_password = settings.__getattr__('EMAIL_PASSWORD')
-    email_recipient = settings.__getattr__('EMAIL_RECIPIENT')
-    # 제목 설정
+    email_recipient = json.loads(settings.__getattr__('EMAIL_RECIPIENT'))
     subject = f"Github 크롤링 결과 리포트 - ({today_str})"
     msg = MIMEMultipart()
     msg['From'] = email
-    msg['To'] = email_recipient
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain'))
-    try:
-        with smtplib.SMTP("smtp.office365.com", 587) as server:
-            server.starttls()
-            server.login(email, email_password)
-            server.send_message(msg)
-        return Response('메일을 성공적으로 전송하였습니다!', status=status.HTTP_200_OK)
-    except Exception as e:
-        LOGGER.error(f"메일 전송 실패: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
-
+    for recipient in email_recipient:
+        msg['To'] = recipient
+        try:
+            with smtplib.SMTP("smtp.office365.com", 587) as server:
+                server.starttls()
+                server.login(email, email_password)
+                server.send_message(msg)
+        except Exception as e:
+            LOGGER.error(f"메일 전송 실패: {e}")
+            return JsonResponse({'error': str(e)}, status=500)
+    return Response('메일을 성공적으로 전송하였습니다!', status=status.HTTP_200_OK)
 def github_ioc_scheduler():
         url = "http://127.0.0.1:8000/github/request/"
         query_params = { # API 요청, 파라미터로 해당 계정들의 최신 트윗 최대 20개까지
