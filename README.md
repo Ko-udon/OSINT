@@ -1,5 +1,5 @@
 # OSINT
-OSINT - 모니터링 중인 git repository 내용 전송 
+OSINT - 모니터링 중인 git repository의 커밋 내용 전송 
 
 
 ### 모니터링 레포지토리 목록
