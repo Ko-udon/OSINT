@@ -38,6 +38,6 @@ jobs:
             echo "EMAIL='${{ secrets.EMAIL }}'" >> .env
             echo "EMAIL_PASSWORD='${{ secrets.EMAIL_PASSWORD }}'" >> .env
 
-            source /home/OSINT/venv/bin/activate
+            source /home/ubuntu/OSINT/venv/bin/activate
             pip install -r requirements.txt
             sudo systemctl restart osint.service
