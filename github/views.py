@@ -31,7 +31,6 @@ import smtplib
 # 경고 무시
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 LOGGER = structlog.getLogger(__name__)
-github_dict = json.loads(settings.__getattr__('GITHUB_DICT'))
 today_date = timezone.now().astimezone(pytz.timezone('Asia/Seoul')).strftime('%Y-%m-%d')
 yesterday_date = (timezone.now().astimezone(pytz.timezone('Asia/Seoul')) - timedelta(days=1)).strftime('%Y-%m-%d')
 korea_timezone = pytz.timezone('Asia/Seoul')            
@@ -169,7 +168,7 @@ def mail_sender(response_data):
     
     
     msg = MIMEMultipart()
-    subject = f"Github 크롤링 결과 리포트 - ({today_str})"
+    subject = f"Github Repo Commit 리포트 - ({today_str})"
     msg['Subject'] = subject
     msg['From'] = email
     msg.attach(MIMEText(body, 'plain'))

@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-c06jqj99!(9f_imlao4dr1yxstd&_%dt5j(0ffvh0+t04+1cc8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
@@ -22,7 +22,6 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-GITHUB_DICT = env('GITHUB_DICT')
 EMAIL = env('EMAIL')
 EMAIL_PASSWORD = env('EMAIL_PASSWORD')
 
