@@ -20,6 +20,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from apscheduler.schedulers.background import BackgroundScheduler
 
+# model
+from .models import SendUser
+
 # mail
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -79,38 +82,36 @@ class request(APIView):
                     commit_time = datetime.fromtimestamp(commit.commit_time, utc_tz)
                     if since <= commit_time <= until:
                         commits.append(commit)
-
-                # 추가된 커밋이 있는 경우
+                        
                 if commits:
                     for commit in commits:
                         parent_commit = commit.parents[0] if commit.parents else None
                         diff = repo.diff(parent_commit, commit) if parent_commit else repo.diff(commit)
-                        # LOGGER.debug(f'커밋 SHA: {str(commit.id)}, 날짜: {commit_time}')
                         for patch in diff:
                             file_path = patch.delta.new_file.path
                             LOGGER.debug(f'파일: {file_path}')
                             
                             # PDF 파일인 경우
                             if file_path.endswith('.pdf'):
-                                LOGGER.debug(f"커밋 중 {file_path}는 PDF 파일입니다.")
+                                # LOGGER.debug(f"커밋 중 {file_path}는 PDF 파일입니다.")
                                 
-                                file_path = Path(repo.path).parent / patch.delta.old_file.path
-                                LOGGER.debug(f"pdf 파일 경로: {file_path}")
-                                with open(file_path, 'rb') as pdf_file:
-                                    pdf_reader = PyPDF2.PdfReader(pdf_file)
-                                    full_text = "".join(page.extract_text() for page in pdf_reader.pages if page.extract_text()) 
+                                # file_path = Path(repo.path).parent / patch.delta.old_file.path
+                                # LOGGER.debug(f"pdf 파일 경로: {file_path}")
+                                # with open(file_path, 'rb') as pdf_file:
+                                #     pdf_reader = PyPDF2.PdfReader(pdf_file)
+                                #     full_text = "".join(page.extract_text() for page in pdf_reader.pages if page.extract_text()) 
+                                pass
                             else:
-                                # 추가된 텍스트만 추출
                                 added_lines = [line for line in patch.text.splitlines() if line.startswith('+') and not line.startswith('+++')]
                                 
                                 full_text = ''
                                 for line in added_lines:
-                                    full_text += line[1:] + '\n'  # '+' 기호를 제거하고 줄바꿈 추가
+                                    full_text += line[1:] + '\n' 
                                     
                             if repo.remotes:
-                                remote_url = repo.remotes[0].url  # 첫 번째 원격 저장소 URL 가져오기
+                                remote_url = repo.remotes[0].url  
                                 owner_repo = remote_url.split('/')[-2:]  
-                                owner = owner_repo[0]  # 주인 이름
+                                owner = owner_repo[0]  
                             
                             commit_sha = str(commit.id)
                             repo_name = Path(repo_path).name
@@ -165,42 +166,31 @@ def mail_sender(response_data):
             
     email = settings.__getattr__('EMAIL')
     email_password = settings.__getattr__('EMAIL_PASSWORD')
-    email_recipient = json.loads(settings.__getattr__('EMAIL_RECIPIENT'))
-    subject = f"Github 크롤링 결과 리포트 - ({today_str})"
+    
+    
     msg = MIMEMultipart()
+    subject = f"Github 크롤링 결과 리포트 - ({today_str})"
+    msg['Subject'] = subject
     msg['From'] = email
     msg.attach(MIMEText(body, 'plain'))
-    recipients = email_recipient
-    msg['To'] = ', '.join(recipients)
-    msg['Subject'] = subject
-    print(recipients)
+    recipients = list(SendUser.objects.values_list('email', flat=True))
+    # msg['To'] = ', '.join(recipients)
+    msg['Bcc'] = ', '.join(recipients)
+
     try:
         with smtplib.SMTP("smtp.office365.com", 587) as server:
             server.starttls()
             server.login(email, email_password)
             server.send_message(msg)
-        return Response('메일을 성공적으로 전송하였습니다!', status=status.HTTP_200_OK)
+            return Response('메일을 성공적으로 전송하였습니다!', status=status.HTTP_200_OK)
     except Exception as e:
         LOGGER.error(f"메일 전송 실패: {e}")
         return JsonResponse({'error': str(e)}, status=500)
         
-        
-    
-    # for recipient in email_recipient:
-    #     msg['To'] = recipient
-    #     try:
-    #         with smtplib.SMTP("smtp.office365.com", 587) as server:
-    #             server.starttls()
-    #             server.login(email, email_password)
-    #             server.send_message(msg)
-    #     except Exception as e:
-    #         LOGGER.error(f"메일 전송 실패: {e}")
-    #         return JsonResponse({'error': str(e)}, status=500)
-    # return Response('메일을 성공적으로 전송하였습니다!', status=status.HTTP_200_OK)
 
 def github_ioc_scheduler():
         url = "http://127.0.0.1:8000/github/request/"
-        query_params = { # API 요청, 파라미터로 해당 계정들의 최신 트윗 최대 20개까지
+        query_params = { 
                 'since': yesterday_date,
                 'until': today_date
         }

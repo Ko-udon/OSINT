@@ -25,8 +25,6 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 GITHUB_DICT = env('GITHUB_DICT')
 EMAIL = env('EMAIL')
 EMAIL_PASSWORD = env('EMAIL_PASSWORD')
-EMAIL_RECIPIENT = env('EMAIL_RECIPIENT')
-
 
 # Application definition
 
