@@ -211,5 +211,5 @@ def initialize_duplicate_ioc():
     duplicate_sha = []
     LOGGER.debug("Github 중복 검사 배열 초기화 완료") 
     
-scheduler.add_job(github_ioc_scheduler, 'cron', hour='8-19') # 매일 8~19시 정각 마다
+scheduler.add_job(github_ioc_scheduler, 'cron', hour='9,13,19') # 매일 8~19시 정각 마다 // 9시, 13시, 19시로 변경
 scheduler.add_job(initialize_duplicate_ioc, 'cron', hour=0, minute=0) # 00시 중복 체크 배열 초기화
