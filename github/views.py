@@ -188,7 +188,7 @@ def mail_sender(response_data):
         
 
 def github_ioc_scheduler():
-        url = "http://127.0.0.1:8000/github/request/"
+        url = "http://127.0.0.1:8000/github/request/" # cron
         query_params = { 
                 'since': yesterday_date,
                 'until': today_date
